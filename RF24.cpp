@@ -440,6 +440,16 @@ RF24::RF24(uint16_t _cepin, uint16_t _cspin, uint32_t _spi_speed)
     }
 }
 
+
+RF24::RF24(uint16_t _cepin, uint16_t _cspin, int16_t _sck, int16_t _miso, int16_t _mosi, uint32_t _spi_speed)
+        :ce_pin(_cepin), csn_pin(_cspin),sck_pin(_sck), miso_pin(_miso), mosi_pin(_mosi),spi_speed(_spi_speed), payload_size(32), dynamic_payloads_enabled(false), addr_width(5),
+         csDelay(5)//,pipe0_reading_address(0)
+{      
+      pipe0_reading_address[0] = 0;
+      if(spi_speed <= 35000){ //Handle old BCM2835 speed constants, default to RF24_SPI_SPEED
+        spi_speed = RF24_SPI_SPEED;
+      }
+}
 /****************************************************************************/
 
 void RF24::setChannel(uint8_t channel)
@@ -608,6 +618,23 @@ bool RF24::begin(void)
       ce(LOW);
       csn(HIGH);
       delay(200);
+    
+    #elif defined(ESP32)
+      if(sck_pin != -1 && miso_pin != -1 && mosi_pin != -1){
+        pinMode(ce_pin,OUTPUT);
+        pinMode(csn_pin,OUTPUT);
+        _SPI.begin(sck_pin,miso_pin,mosi_pin,csn_pin);
+        ce(LOW);
+        csn(HIGH);
+      } else {
+        pinMode(ce_pin,OUTPUT);
+        pinMode(csn_pin,OUTPUT);
+        _SPI.begin();
+        ce(LOW);
+        csn(HIGH);
+      }
+        
+
     #else
       // Initialize pins
       if (ce_pin != csn_pin) {

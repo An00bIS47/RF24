@@ -77,8 +77,17 @@ private:
     GPIO gpio;
     #endif
 
+
+
     uint16_t ce_pin; /**< "Chip Enable" pin, activates the RX or TX role */
     uint16_t csn_pin; /**< SPI Chip select */
+
+#if defined(ESP32)
+    int16_t sck_pin;
+    int16_t miso_pin;
+    int16_t mosi_pin;
+#endif
+
     uint32_t spi_speed; /**< SPI Bus Speed */
     #if defined (RF24_LINUX) || defined (XMEGA_D3)
     uint8_t spi_rxbuff[32+1] ; //SPI receive buffer (payload max 32 bytes)
@@ -130,6 +139,30 @@ public:
      * @param spispeed The SPI speed in Hz ie: 1000000 == 1Mhz
      */
     RF24(uint16_t _cepin, uint16_t _cspin, uint32_t _spispeed = RF24_SPI_SPEED);
+
+
+#if defined(ESP32)
+    /**
+     * RF24Ext Constructor
+     *
+     * Creates a new instance of this driver.  Before using, you create an instance
+     * and send in the unique pins that this chip is connected to.
+     *
+     * See http://tmrh20.github.io/RF24/pages.html for device specific information <br>
+     *
+     * @note Users can specify default SPI speed by modifying #define RF24_SPI_SPEED in RF24_config.h <br>
+     * For Arduino, SPI speed will only be properly configured this way on devices supporting SPI TRANSACTIONS <br>
+     * Older/Unsupported Arduino devices will use a default clock divider & settings configuration <br>
+     * Linux: The old way of setting SPI speeds using BCM2835 driver enums has been removed <br>
+     *
+     * @param _sck The pin attached to Clock on the RF module
+     * @param _miso The pin attached to MISO on the RF module
+     * @param _mosi The pin attached to MOSI on the RF module
+     * @param _cspin The pin attached to Chip Select
+     * @param spispeed The SPI speed in Hz ie: 1000000 == 1Mhz
+     */
+    RF24(uint16_t _cepin, uint16_t _cspin, int16_t _sck=-1, int16_t _miso=-1, int16_t _mosi=-1, uint32_t _spispeed = RF24_SPI_SPEED);
+#endif
 
     #if defined (RF24_LINUX)
     virtual ~RF24() {};
